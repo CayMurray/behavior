@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from matlab import engine
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report,confusion_matrix
 
 eng = engine.start_matlab()
 path = 'data/neurons.mat'
@@ -63,7 +66,7 @@ calcium_pcs = pca.fit_transform(scaled_data)
 df_pc = pd.DataFrame(data=calcium_pcs,columns=['PC1','PC2'])
 context_ids = [context for context in df_master.columns]
 
-desired_contexts = ['US+3','FS','HC_POST']
+desired_contexts = ['FS','HC_POST+3']
 df_pc['context_ids'] = context_ids
 df_pc = df_pc[df_pc['context_ids'].isin(desired_contexts)]
 
@@ -71,5 +74,29 @@ sns.scatterplot(data=df_pc,x='PC1',y='PC2',hue='context_ids',palette='tab10')
 plt.xlabel('PC1')
 plt.ylabel('PC2')
 plt.legend(title='Context', bbox_to_anchor=(1, 1), loc='upper left', borderaxespad=0.)
+#plt.show()
+
+
+## MACHINE LEARNING ##
+
+X = df_pc[['PC1','PC2']]
+Y = df_pc[['context_ids']]
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
+rf = RandomForestClassifier(n_estimators=100,random_state=42)
+rf.fit(X_train,y_train)
+predictions = rf.predict(X_test)
+print(classification_report(y_test,predictions))
+cm = confusion_matrix(y_test,predictions)
+
+plt.figure(figsize=(10,7))
+unique_labels = sorted(set(y_test['context_ids']))
+sns.heatmap(cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
+plt.xlabel('Predicted labels')
+plt.ylabel('True labels')
+plt.title('Confusion Matrix')
 plt.show()
+
+
+
 
