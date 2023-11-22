@@ -1,0 +1,30 @@
+name: pytorch
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+  - anaconda
+
+dependencies: 
+  - python=3.8
+  - pandas
+  - openpyxl
+  - xlsxwriter
+  - numpy
+  - nibabel
+  - networkx
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - pyvis
+  - dvc
+  - dvc-ssh
+  - pip
+ 
+

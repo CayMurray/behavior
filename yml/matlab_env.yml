@@ -1,0 +1,22 @@
+name: matlab
+
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+
+dependencies: 
+  - python=3.9
+  - pandas
+  - openpyxl
+  - xlsxwriter
+  - numpy
+  - nibabel
+  - matplotlib
+  - seaborn
+  - networkx
+  - scikit-learn
+  - dvc
+  - dvc-ssh
+  - pip
+

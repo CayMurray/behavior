@@ -1,0 +1,7 @@
+[core]
+    remote = arc
+    
+[remote "arc"]
+    url = ssh://cayden.murray@arc.ucalgary.ca:/home/cayden.murray/data
+    keyfile = C:\\Users\\cayde\\.ssh\\arc
+    port = 22

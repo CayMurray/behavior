@@ -1,0 +1,12 @@
+{
+    "name": "Python Dev Container",
+    //"dockerFile": "Dockerfile",
+    "image": "pytorch:v.1.0.0" ,
+    //"context": "..",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python",
+                           "formulahendry.code-runner"]
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "python.pythonPath":  "/opt/conda/envs/pytorch/bin/python",
+    "code-runner.executorMap": {
+        "python": "/opt/conda/envs/pytorch/bin/python -u"
+    }
+}
+
+
