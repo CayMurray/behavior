@@ -8,5 +8,6 @@
             "extensions": ["ms-python.python",
                            "formulahendry.code-runner"]
         }
-    }
+    },
+    "runArgs": ["--gpus", "all"]
 }
