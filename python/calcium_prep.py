@@ -23,6 +23,7 @@ HC_labels = ['US_PRE','US+1','US+2','US+3',
             'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
             'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3']
 
+
 ## FUNCTIONS ##
 
 def convert_to_pd(path,context_labels):
@@ -58,31 +59,34 @@ def convert_to_pd(path,context_labels):
     return df_master
 
 
-def get_pcs(df_master):
-
+def reduce_dim(df_master,mode):
     z_scaler = StandardScaler()
     scaled_data = z_scaler.fit_transform(df_master.T.values)
-    pca = PCA(n_components=2)
 
-    calcium_pcs = pca.fit_transform(scaled_data)
-    df_pc = pd.DataFrame(data=calcium_pcs,columns=['PC1','PC2'])
-    context_ids = [context for context in df_master.columns]
+    if mode == 'PCA':
+        pca = PCA(n_components=2)
+        calcium_pcs = pca.fit_transform(scaled_data)
+        df_reduce = pd.DataFrame(data=calcium_pcs,columns=['PC1','PC2'])
 
-    desired_contexts = ['HC_POST+2','HC_POST+3']
-    df_pc['context_ids'] = context_ids
-    df_pc = df_pc[df_pc['context_ids'].isin(desired_contexts)]
+    elif mode == 'UMAP':
+        reducer = umap.UMAP(n_components=2,random_state=42)
+        embedding = reducer.fit_transform(scaled_data)
+        df_reduce = pd.DataFrame(data=embedding,columns=['UMAP1','UMAP2'])
 
-    sns.scatterplot(data=df_pc,x='PC1',y='PC2',hue='context_ids',palette='tab10')
+    df_reduce['context_ids'] = [context for context in df_master.columns]
+
+    return df_reduce
+
+
+def visualize(HC_pc,HC_umap,FS_pc,FS_umap,desired_contexts):
+    sns.scatterplot(data=HC_pc,x='UMAP1',y='UMAP2',hue='context_ids',palette='tab10')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
     plt.legend(title='Context', bbox_to_anchor=(1, 1), loc='upper left', borderaxespad=0.)
     plt.show()
 
-    return df_pc
-
 
 def rf(df_pc):
-
     X = df_pc[['PC1','PC2']]
     Y = df_pc[['context_ids']]
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
@@ -102,13 +106,25 @@ def rf(df_pc):
     plt.show()
 
 
+## CONVERT TO PANDAS ##
 df_HC = convert_to_pd(path=HC_path,context_labels=HC_labels)
 df_FS = convert_to_pd(path=FS_path,context_labels=FS_labels)
 
-df_FS_pcs = get_pcs(df_FS)
-df_HC_pcs = get_pcs(df_HC)
 
-rf(df_FS_pcs)
+## DIMENSIONALITY REDUCTION + VISUALIZATION ##
+
+#df_HC_pcs = reduce_dim(df_HC,'PCA')
+#df_FS_pcs = reduce_dim(df_FS,'PCA')
+df_HC_umaps = reduce_dim(df_HC,'UMAP')
+#df_FS_umaps = reduce_dim(df_FS,'UMAP')
+
+contexts_to_visualize = ['HC_PRE','HC_POST']
+visualize(HC_pc=df_HC_umaps, HC_umap='memes', FS_pc='memes', FS_umap='memes', desired_contexts=contexts_to_visualize)
+
+
+## MACHINE LEARNING ##
+
+#rf(df_FS_pcs)
 
 
 
