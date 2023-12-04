@@ -17,6 +17,7 @@ dependencies:
   - networkx
   - pyvis
   - scikit-learn
+  - umap-learn
   - dvc
   - dvc-ssh
   - pip
