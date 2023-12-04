@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report,confusion_matrix
 
 eng = engine.start_matlab()
-path = 'data/neurons.mat'
+path = 'data/FS.mat'
 
 
 ## GET ALL NEURONS ##

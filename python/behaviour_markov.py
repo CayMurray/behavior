@@ -46,10 +46,10 @@ for col in df_master.columns:
     cycles_gcd = reduce(gcd,cycle_periods)
     is_aperiodic = cycles_gcd == 1
 
-    #print(f'{col} irreducibility: {nx.is_strongly_connected(G)}, aperiodic: {is_aperiodic}')
+    print(f'{col} irreducibility: {nx.is_strongly_connected(G)}, aperiodic: {is_aperiodic}')
     #centrality_measures = dict(sorted(nx.degree_centrality(G).items(),key=lambda x: x[1],reverse=True))
 
-    net.from_nx(G)
-    net.show(name='data/markov.html')
+    #net.from_nx(G)
+    #net.show('markov.html',notebook=False)
     
     

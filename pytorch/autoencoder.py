@@ -75,13 +75,11 @@ for epoch in range(epochs):
         criterion = loss(reconstruction,image)
         optimizer.zero_grad()
         criterion.backward(),optimizer.step()
+
         epoch_loss.append(criterion.item())
 
     average_loss = torch.tensor(epoch_loss,dtype=torch.float).mean()
     print(f'Epoch {epoch} loss: {average_loss}')
-
-torch.save(model,'models/mnist_autoencoder.pth')
-#model = torch.load('models/mnist_autoencoder.pth')
 
 
         
