@@ -79,25 +79,45 @@ def reduce_dim(df_master,mode):
 
 
 def visualize(HC_pc,HC_umap,FS_pc,FS_umap,desired_contexts):
-    sns.scatterplot(data=HC_pc,x='UMAP1',y='UMAP2',hue='context_ids',palette='tab10')
-    plt.xlabel('PC1')
-    plt.ylabel('PC2')
-    plt.legend(title='Context', bbox_to_anchor=(1, 1), loc='upper left', borderaxespad=0.)
+    num_contexts = len(desired_contexts)
+    fig,axs = plt.subplots(nrows=num_contexts, ncols=4, figsize=(20,5*num_contexts))
+
+    if num_contexts == 1:
+        axs = axs.reshape(1, -1)
+
+    for i,context in enumerate(desired_contexts):
+        df_HC_pcs = HC_pc[HC_pc['context_ids'].isin(context)]
+        df_FS_pcs = FS_pc[FS_pc['context_ids'].isin(context)]
+
+        df_HC_umaps = HC_umap[HC_umap['context_ids'].isin(context)]
+        df_FS_umaps = FS_umap[FS_umap['context_ids'].isin(context)]
+
+        sns.scatterplot(ax=axs[i,0],data=df_HC_pcs,x='PC1',y='PC2',hue='context_ids',palette='tab10')
+        axs[i,0].set_title(f'HC_PCs')
+        sns.scatterplot(ax=axs[i,1],data=df_FS_pcs,x='PC1',y='PC2',hue='context_ids',palette='tab10')
+        axs[i,1].set_title(f'FS_PCs')
+        sns.scatterplot(ax=axs[i,2],data=df_HC_umaps,x='UMAP1',y='UMAP2',hue='context_ids',palette='tab10')
+        axs[i,2].set_title(f'HC_UMAPs')
+        sns.scatterplot(ax=axs[i,3],data=df_FS_umaps,x='UMAP1',y='UMAP2',hue='context_ids',palette='tab10')
+        axs[i,3].set_title(f'FS_UMAPs')
+
+    plt.tight_layout()
     plt.show()
 
 
-def rf(df_pc):
-    X = df_pc[['PC1','PC2']]
-    Y = df_pc[['context_ids']]
+def rf(df_master,contexts,mode):
+    df_master = df_master[df_master['context_ids'].isin(contexts_to_predict)]
+    X = df_master[[f'{mode}1',f'{mode}2']]
+    Y = df_master[['context_ids']]
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
     unique_labels = sorted(set(y_test['context_ids']))
 
     rf = RandomForestClassifier(n_estimators=100,random_state=42)
     rf.fit(X_train,y_train)
     predictions = rf.predict(X_test)
-    cm = confusion_matrix(y_test,predictions)
-
     print(classification_report(y_test,predictions))
+
+    cm = confusion_matrix(y_test,predictions)
     plt.figure(figsize=(10,7))
     sns.heatmap(cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
     plt.xlabel('Predicted labels')
@@ -115,16 +135,17 @@ df_FS = convert_to_pd(path=FS_path,context_labels=FS_labels)
 
 #df_HC_pcs = reduce_dim(df_HC,'PCA')
 #df_FS_pcs = reduce_dim(df_FS,'PCA')
-df_HC_umaps = reduce_dim(df_HC,'UMAP')
-#df_FS_umaps = reduce_dim(df_FS,'UMAP')
+#df_HC_umaps = reduce_dim(df_HC,'UMAP')
+df_FS_umaps = reduce_dim(df_FS,'UMAP')
 
-contexts_to_visualize = ['HC_PRE','HC_POST']
-visualize(HC_pc=df_HC_umaps, HC_umap='memes', FS_pc='memes', FS_umap='memes', desired_contexts=contexts_to_visualize)
+contexts_to_visualize = [('HC_PRE','HC_POST'), ('HC_PRE','HC_POST+3')]
+#visualize(HC_pc=df_HC_pcs, HC_umap=df_HC_umaps, FS_pc=df_FS_pcs, FS_umap=df_FS_umaps, desired_contexts=contexts_to_visualize)
 
 
 ## MACHINE LEARNING ##
 
-#rf(df_FS_pcs)
+contexts_to_predict = ['HC_PRE','HC_POST']
+rf(df_FS_umaps, contexts=contexts_to_predict, mode='UMAP')
 
 
 
