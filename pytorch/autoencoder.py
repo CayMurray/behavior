@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch import utils,nn,optim
 from torchvision import datasets
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -81,5 +82,7 @@ for epoch in range(epochs):
     average_loss = torch.tensor(epoch_loss,dtype=torch.float).mean()
     print(f'Epoch {epoch} loss: {average_loss}')
 
+fig,ax = plt.subplots(figsize=(10,3))
+ax.plot(range(epochs),average_loss)
 
         
