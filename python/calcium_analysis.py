@@ -139,6 +139,7 @@ def rf(inputs,contexts):
 
 
 ## CONVERT TO PANDAS ##
+
 df_HC = convert_to_pd(path=HC_path,context_labels=HC_labels)
 df_FS = convert_to_pd(path=FS_path,context_labels=FS_labels)
 
@@ -158,7 +159,13 @@ contexts_to_visualize = [('HC_PRE','HC_POST'), ('HC_PRE','HC_POST+3')]
 
 inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
 contexts_to_predict = ['HC_PRE','HC_POST']
-rf(inputs=inputs, contexts=contexts_to_predict)
+#rf(inputs=inputs, contexts=contexts_to_predict)
+
+
+## SAVE DATA ##
+
+df_FS.to_csv('data/FS_raw.csv',index=False)
+df_HC.to_csv('data/HC_raw.csv',index=False)
 
 
 

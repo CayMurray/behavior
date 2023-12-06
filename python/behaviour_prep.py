@@ -16,7 +16,6 @@ for i,column in enumerate(df.columns):
         rat_id+=1
 
 df.columns = new_columns
-unique_states = df.filter(like='behaviour').stack().unique()
 discrete_states = []
 
 for i in range(int(len(df.columns)/2)): 
@@ -35,8 +34,4 @@ for i in range(int(len(df.columns)/2)):
 
 df_time = pd.DataFrame({'time':[i for i in range(0,610,10)]})
 df_final = pd.concat([df_time,*discrete_states],axis=1)
-df_final.to_csv('data/pre.csv',index=False)
-
-
-
-
+df_final.to_csv('data/sabin_pre.csv',index=False)
