@@ -3,14 +3,16 @@
 import numpy as np
 import pandas as pd
 import umap
+import hdbscan
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matlab import engine
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score, adjusted_rand_score
 
 eng = engine.start_matlab()
 FS_path = 'data/FS.mat'
@@ -149,23 +151,34 @@ df_FS = convert_to_pd(path=FS_path,context_labels=FS_labels)
 df_HC_pcs = reduce_dim(df_HC,'PCA')
 df_FS_pcs = reduce_dim(df_FS,'PCA')
 df_HC_umaps = reduce_dim(df_HC,'UMAP')
-df_FS_umaps = reduce_dim(df_FS,'UMAP')
+#df_FS_umaps = reduce_dim(df_FS,'UMAP')
 
 contexts_to_visualize = [('HC_PRE','HC_POST'), ('HC_PRE','HC_POST+3')]
 #visualize(HC_pc=df_HC_pcs, HC_umap=df_HC_umaps, FS_pc=df_FS_pcs, FS_umap=df_FS_umaps, desired_contexts=contexts_to_visualize)
 
+## CLUSTERING ANALYSIS ##
+
+le = LabelEncoder()
+encoded_labels = le.fit_transform(df_HC_umaps['context_ids'])
+hdb = hdbscan.HDBSCAN(min_cluster_size=5)
+clusters = hdb.fit_predict(df_HC_umaps[['UMAP1','UMAP2']])
+
+homogeneity = homogeneity_score(encoded_labels,clusters)
+completeness = completeness_score(encoded_labels,clusters)
+print(f'Homogeneity: {homogeneity}, Completeness: {completeness}')
+
 
 ## MACHINE LEARNING ##
 
-inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
+#inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
 contexts_to_predict = ['HC_PRE','HC_POST']
 #rf(inputs=inputs, contexts=contexts_to_predict)
 
 
 ## SAVE DATA ##
 
-df_FS.to_csv('data/FS_raw.csv',index=False)
-df_HC.to_csv('data/HC_raw.csv',index=False)
+#df_FS.to_csv('data/FS_raw.csv',index=False)
+#df_HC.to_csv('data/HC_raw.csv',index=False)
 
 
 
