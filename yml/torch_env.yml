@@ -21,6 +21,7 @@ dependencies:
   - pytorch-cuda=12.1
   - scikit-learn
   - umap-learn
+  - hdbscan
   - matplotlib
   - seaborn
   - pyvis

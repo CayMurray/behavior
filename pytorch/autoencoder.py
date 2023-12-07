@@ -153,6 +153,8 @@ with torch.no_grad():
     encoded_data = model.encoder(input_data).cpu()
     reduced_components = np.array(encoded_data,dtype=np.float32)
     df_reduced = pd.DataFrame(data=reduced_components,index=context_ids,columns=['AE1','AE2'])
+    df_reduced['context_ids'] = context_ids
+    df_reduced.to_csv('data/FS_ae.csv',index=False)
 
 
 

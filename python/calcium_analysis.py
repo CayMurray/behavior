@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score,adjusted_rand_score
+from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score
 
 eng = engine.start_matlab()
 FS_path = 'data/FS.mat'
@@ -195,14 +195,6 @@ cluster_analysis(cluster_input,cluster_types)
 inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
 contexts_to_predict = ['HC_PRE','HC_POST']
 rf(inputs=inputs, contexts=contexts_to_predict)
-
-
-## SAVE DATA ##
-
-#df_FS.to_csv('data/FS_raw.csv',index=False)
-#df_HC.to_csv('data/HC_raw.csv',index=False)
-
-
 
 
 
