@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score, adjusted_rand_score
+from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score,adjusted_rand_score
 
 eng = engine.start_matlab()
 FS_path = 'data/FS.mat'
@@ -90,7 +90,6 @@ def visualize(HC_pc,HC_umap,FS_pc,FS_umap,desired_contexts):
     for i,context in enumerate(desired_contexts):
         df_HC_pcs = HC_pc[HC_pc['context_ids'].isin(context)]
         df_FS_pcs = FS_pc[FS_pc['context_ids'].isin(context)]
-
         df_HC_umaps = HC_umap[HC_umap['context_ids'].isin(context)]
         df_FS_umaps = FS_umap[FS_umap['context_ids'].isin(context)]
 
@@ -105,6 +104,31 @@ def visualize(HC_pc,HC_umap,FS_pc,FS_umap,desired_contexts):
 
     plt.tight_layout()
     plt.show()
+
+
+def cluster_analysis(input_list,cluster_list):
+    results = []
+
+    for (group,df,dtype) in input_list:
+        le = LabelEncoder()
+        encoded_labels = le.fit_transform(df['context_ids'])
+
+        for c in cluster_list:
+            if c == 'kmeans':
+                c_algorithm = KMeans(n_clusters=2,n_init=10)
+            elif c == 'hdb': 
+                c_algorithm = hdbscan.HDBSCAN(min_cluster_size=5)
+
+            clusters = c_algorithm.fit_predict(df[[f'{dtype}1',f'{dtype}2']])
+            homogeneity = homogeneity_score(encoded_labels,clusters)
+            completeness = completeness_score(encoded_labels,clusters)
+
+            results.append({'Group':group,'Data Type':dtype,
+                            'Clustering Algorithm':c.upper(),'Homogeneity Score':homogeneity, 
+                            'Completeness Score':completeness})
+    
+    df_master = pd.DataFrame(results)
+    print(df_master)
 
 
 def rf(inputs,contexts):
@@ -151,28 +175,26 @@ df_FS = convert_to_pd(path=FS_path,context_labels=FS_labels)
 df_HC_pcs = reduce_dim(df_HC,'PCA')
 df_FS_pcs = reduce_dim(df_FS,'PCA')
 df_HC_umaps = reduce_dim(df_HC,'UMAP')
-#df_FS_umaps = reduce_dim(df_FS,'UMAP')
+df_FS_umaps = reduce_dim(df_FS,'UMAP')
 
-contexts_to_visualize = [('HC_PRE','HC_POST'), ('HC_PRE','HC_POST+3')]
-#visualize(HC_pc=df_HC_pcs, HC_umap=df_HC_umaps, FS_pc=df_FS_pcs, FS_umap=df_FS_umaps, desired_contexts=contexts_to_visualize)
+contexts_to_visualize = [('HC_PRE','HC_POST')]
+visualize(HC_pc=df_HC_pcs, HC_umap=df_HC_umaps, FS_pc=df_FS_pcs, FS_umap=df_FS_umaps, desired_contexts=contexts_to_visualize)
+
 
 ## CLUSTERING ANALYSIS ##
 
-le = LabelEncoder()
-encoded_labels = le.fit_transform(df_HC_umaps['context_ids'])
-hdb = hdbscan.HDBSCAN(min_cluster_size=5)
-clusters = hdb.fit_predict(df_HC_umaps[['UMAP1','UMAP2']])
+cluster_types = ['kmeans','hdb']
+cluster_input = [('HC',df_HC_pcs,'PC'),('HC',df_HC_umaps,'UMAP'),
+                 ('FS',df_FS_pcs,'PC'),('FS',df_FS_umaps,'UMAP')]
 
-homogeneity = homogeneity_score(encoded_labels,clusters)
-completeness = completeness_score(encoded_labels,clusters)
-print(f'Homogeneity: {homogeneity}, Completeness: {completeness}')
+cluster_analysis(cluster_input,cluster_types)
 
 
 ## MACHINE LEARNING ##
 
-#inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
+inputs = [(df_HC_pcs,'HC','PC'),(df_HC_umaps,'HC','UMAP'),(df_FS_pcs,'FS','PC'),(df_FS_umaps,'FS','UMAP')]
 contexts_to_predict = ['HC_PRE','HC_POST']
-#rf(inputs=inputs, contexts=contexts_to_predict)
+rf(inputs=inputs, contexts=contexts_to_predict)
 
 
 ## SAVE DATA ##
