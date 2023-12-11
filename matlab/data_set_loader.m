@@ -2,7 +2,7 @@ clear all
 close all
 clc
 %% 
-load neurons.mat 
+load ../data/FS.mat 
 %% 
 figure(6)
 subplot(2,1,1)
