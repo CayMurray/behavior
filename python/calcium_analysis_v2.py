@@ -1,23 +1,37 @@
+## MODULES AND ENGINE ##
+
 import os
 import numpy as np
 import pandas as pd
+import umap
+import seaborn as sns
+import matplotlib.pyplot as plt
 from matlab import engine
-from collections import Counter
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 eng = engine.start_matlab()
 
+
+## CLASSES ##
+
 class DataProcessor:
 
-    def __init__(self,*args):
+    def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
         self.path = 'data'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
         'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3']
+        self.reduce_list = reduce_list
 
-    def double_to_list(self,matlab_array,num_type):
-        return list(np.array(matlab_array,dtype=num_type).reshape(-1))
+    def prepare_data(self):
+        self.load_data()
+        self.construct_df()
+        self.apply_dimension_reduction()
+
+        return self.dict
 
     def load_data(self):
         for group in self.datasets:
@@ -43,9 +57,74 @@ class DataProcessor:
                 num_of_times = end - start + 1
                 context_list.extend([context] * num_of_times)
 
-            df_master = pd.DataFrame(data=self.dict[group]['data'],columns=context_list)
+            df_master = pd.DataFrame(data=d['data'],columns=context_list)
             df_master['rat_id'] = self.dict[group]['rat_indices']
+            self.dict[group]['data'] = df_master
 
-memes = DataProcessor('FS','HC')
-memes.load_data()
-memes.construct_df()
+    def apply_dimension_reduction(self):
+        for group in self.datasets:
+            reducer = DimensionReduction(*self.reduce_list)
+            df_input = self.dict[group]['data']
+            reduced_dict = reducer.get_components(df_input)
+            self.dict[group].update(reduced_dict)
+            
+            for context in ['data','ctimes','rat_indices']:
+                del self.dict[group][context]
+
+    @staticmethod
+    def double_to_list(matlab_array,num_type):
+        return list(np.array(matlab_array,dtype=num_type).reshape(-1))
+    
+
+class DimensionReduction:
+    
+    def __init__(self,*args):
+        self.modes = args
+
+    def get_components(self,data):
+        reduced_dict = {}
+        contexts = data.columns[:-1]
+        data = data.drop(['rat_id'],axis=1).T
+
+        for mode in self.modes:
+            z_scaler = StandardScaler()
+            scaled_data = z_scaler.fit_transform(data)
+
+            if mode == 'PCA':
+                algorithm = PCA(n_components=2)
+            elif mode == 'UMAP':
+                algorithm = umap.UMAP(n_components=2,random_state=42)
+
+            reduced_components = algorithm.fit_transform(scaled_data)
+            df_reduced = pd.DataFrame(data=reduced_components,columns=[f'{mode}_1',f'{mode}_2'])
+            df_reduced['context_ids'] = contexts
+            reduced_dict[mode] = df_reduced
+
+        return reduced_dict
+    
+class Analysis:
+
+    def __init__(self,contexts_to_analyze):
+        self.contexts = contexts_to_analyze
+
+    def visualize_data(self,input):
+        for (group,modes) in input.items():
+            for mode,data in modes.items():
+                data = data[data['context_ids'].isin(self.contexts)]
+                fig,ax = plt.subplots(figsize=(15,10))
+                sns.scatterplot(ax=ax,data=data,x=f'{mode}_1',y=f'{mode}_2',hue='context_ids',palette='tab10')
+
+        plt.show()
+
+
+## PROCESS AND ANALYZE DATA ##
+
+context_processor = DataProcessor('FS','HC',reduce_list=['PCA'])
+prepared_data = context_processor.prepare_data()
+
+visualizer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST'])
+visualizer.visualize_data(prepared_data)
+
+
+
+
