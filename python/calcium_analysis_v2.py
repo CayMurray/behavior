@@ -9,17 +9,96 @@ import matplotlib.pyplot as plt
 from matlab import engine
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score
 
 eng = engine.start_matlab()
 
 
 ## CLASSES ##
 
+class DimensionReduction:
+    
+    def __init__(self,*args):
+        self.modes = args
+
+    def get_components(self,data):
+        reduced_dict = {}
+        contexts = data.columns[:-1]
+        data = data.drop(['rat_id'],axis=1).T
+
+        for mode in self.modes:
+            z_scaler = StandardScaler()
+            scaled_data = z_scaler.fit_transform(data)
+
+            if mode == 'PCA':
+                algorithm = PCA(n_components=2)
+            elif mode == 'UMAP':
+                algorithm = umap.UMAP(n_components=2,random_state=42)
+
+            reduced_components = algorithm.fit_transform(scaled_data)
+            df_reduced = pd.DataFrame(data=reduced_components,columns=[f'{mode}_1',f'{mode}_2'])
+            df_reduced['context_ids'] = contexts
+            reduced_dict[mode] = df_reduced
+
+        return reduced_dict
+    
+
+class RandomForest:
+
+    def __init__(self,data,desired_contexts=['HC_PRE','HC_POST'],num_trees=100,random_state=42):
+        self.dict = data
+        self.num_trees = num_trees
+        self.random_state = random_state
+        self.contexts = desired_contexts
+        
+    def train_rf(self):
+        for (group,modes) in self.dict.items():
+                for mode,data in modes.items():
+                    data = data[data['context_ids'].isin(self.contexts)]
+                    X = data.drop(['context_ids'],axis=1)
+                    Y = data['context_ids']
+                    X_train,x_test,Y_train,y_test = train_test_split(X,Y,test_size=0.3,random_state=self.random_state,shuffle=True)
+                    rf = RandomForestClassifier(n_estimators=self.num_trees,random_state=self.random_state)
+                    rf.fit(X_train,Y_train)
+                    predicted = rf.predict(x_test)
+                    cm = confusion_matrix(y_test,predicted)
+                    unique_labels = sorted(set(Y))
+
+                    fig,ax = plt.subplots(figsize=(20,10))
+                    sns.heatmap(ax=ax, data=cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
+                    ax.set_title(f'{group} {mode}',pad=20,fontsize=20)
+                    ax.set_xlabel('Predicted',labelpad=20,fontsize=20)
+
+        plt.show()
+
+
+class CorrelationAnalysis:
+
+    def __init__(self,input):
+        self.dict = input
+        self.contexts = ['HC_PRE','HC_POST',
+                         'HC_POST+1','HC_POST+2','HC_POST+3']
+
+    def get_vectors(self):
+        for (group,modes) in self.dict.items():
+                for mode,data in modes.items():
+                    contexts = self.contexts.copy()
+
+                    if group == 'non-FS':
+                        contexts = contexts.pop(0)
+
+                    data = data[data['context_ids'].isin(contexts)]
+
+
+
+
 class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data'
+        self.path = 'data/calcium'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -76,32 +155,6 @@ class DataProcessor:
         return list(np.array(matlab_array,dtype=num_type).reshape(-1))
     
 
-class DimensionReduction:
-    
-    def __init__(self,*args):
-        self.modes = args
-
-    def get_components(self,data):
-        reduced_dict = {}
-        contexts = data.columns[:-1]
-        data = data.drop(['rat_id'],axis=1).T
-
-        for mode in self.modes:
-            z_scaler = StandardScaler()
-            scaled_data = z_scaler.fit_transform(data)
-
-            if mode == 'PCA':
-                algorithm = PCA(n_components=2)
-            elif mode == 'UMAP':
-                algorithm = umap.UMAP(n_components=2,random_state=42)
-
-            reduced_components = algorithm.fit_transform(scaled_data)
-            df_reduced = pd.DataFrame(data=reduced_components,columns=[f'{mode}_1',f'{mode}_2'])
-            df_reduced['context_ids'] = contexts
-            reduced_dict[mode] = df_reduced
-
-        return reduced_dict
-    
 class Analysis:
 
     def __init__(self,contexts_to_analyze):
@@ -113,18 +166,21 @@ class Analysis:
                 data = data[data['context_ids'].isin(self.contexts)]
                 fig,ax = plt.subplots(figsize=(15,10))
                 sns.scatterplot(ax=ax,data=data,x=f'{mode}_1',y=f'{mode}_2',hue='context_ids',palette='tab10')
-
+                ax.set_title(f'{group} - {mode}')
         plt.show()
+
+    def predict_labels(self,input):
+        classifier_instance = RandomForest(input,self.contexts)
+        classifier_instance.train_rf()
 
 
 ## PROCESS AND ANALYZE DATA ##
 
-context_processor = DataProcessor('FS','HC',reduce_list=['PCA'])
-prepared_data = context_processor.prepare_data()
+context_processor = DataProcessor('FS',reduce_list=['PCA'])
+#prepared_data = context_processor.prepare_data()
 
-visualizer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST'])
-visualizer.visualize_data(prepared_data)
-
-
+#analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST'])
+#analyzer.visualize_data(prepared_data)
+#analyzer.predict_labels(prepared_data)
 
 
