@@ -1,6 +1,8 @@
 ## MODULES AND ENGINE ##
 
 import os
+import itertools
+import matlab
 import numpy as np
 import pandas as pd
 import umap
@@ -11,7 +13,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report,confusion_matrix,homogeneity_score,completeness_score
+from sklearn.metrics import confusion_matrix
+from scipy.stats import pearsonr
+
 
 eng = engine.start_matlab()
 
@@ -92,13 +96,11 @@ class CorrelationAnalysis:
                     data = data[data['context_ids'].isin(contexts)]
 
 
-
-
 class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data/calcium'
+        self.path = 'data'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -138,16 +140,16 @@ class DataProcessor:
 
             df_master = pd.DataFrame(data=d['data'],columns=context_list)
             df_master['rat_id'] = self.dict[group]['rat_indices']
-            self.dict[group]['data'] = df_master
+            self.dict[group]['raw'] = df_master
 
     def apply_dimension_reduction(self):
         for group in self.datasets:
             reducer = DimensionReduction(*self.reduce_list)
-            df_input = self.dict[group]['data']
+            df_input = self.dict[group]['raw']
             reduced_dict = reducer.get_components(df_input)
             self.dict[group].update(reduced_dict)
             
-            for context in ['data','ctimes','rat_indices']:
+            for context in ['ctimes','rat_indices']:
                 del self.dict[group][context]
 
     @staticmethod
@@ -173,14 +175,45 @@ class Analysis:
         classifier_instance = RandomForest(input,self.contexts)
         classifier_instance.train_rf()
 
+    def calculate_correlation(self,input):
+        correlation_df = pd.DataFrame(index=self.contexts,columns=self.contexts)
+        vector_dict = {}
+
+        for unique_context in self.contexts:
+            context_data = input['FS']['raw'][unique_context]
+            averaged_data = np.mean(context_data,axis=0)
+            vector_dict[unique_context] = averaged_data
+
+        combinations = list(itertools.combinations(vector_dict.keys(),2))
+
+        for i in combinations:
+            group_1 = vector_dict[i[0]]
+            group_2 = vector_dict[i[1]]
+            correlation_df.at[i[0],i[1]] = pearsonr(group_1,group_2)
+
+        print(correlation_df.head())
+
+    @staticmethod
+    def seqnmf(input):
+        df = input['FS']['raw']
+
+        for id in set(df['rat_id']):
+            filtered_data = df[df['rat_id']==id]
+            array = filtered_data.drop(['rat_id'],axis=1).to_numpy()
+            matlab_array = matlab.double(array.tolist())
+            patterns = eng.seqNMF(matlab_array,'K', 5, 'L', 20, 'lambda', 0.00)
+            eng.eval(f"saveas(gcf,'seqNMF_result{id}.png')",nargout=0)
+
 
 ## PROCESS AND ANALYZE DATA ##
 
 context_processor = DataProcessor('FS',reduce_list=['PCA'])
-#prepared_data = context_processor.prepare_data()
+prepared_data = context_processor.prepare_data()
 
-#analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST'])
+analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST','HC_POST+1','HC_POST+2','HC_POST+3'])
 #analyzer.visualize_data(prepared_data)
 #analyzer.predict_labels(prepared_data)
+analyzer.calculate_correlation(prepared_data)
+#analyzer.seqnmf(prepared_data)
 
 
