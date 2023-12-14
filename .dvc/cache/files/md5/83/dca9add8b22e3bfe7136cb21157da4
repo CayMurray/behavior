@@ -1,0 +1,62 @@
+time,rat_0,rat_1,rat_2,rat_3,rat_4,rat_5,rat_6,rat_7,rat_8,rat_9
+0,N HomeBox,S NosePokeGreen,R ExitAttempt,W NosePokeBlank,S NosePokeGreen,N HomeBox,W NosePokeBlank,N HomeBox,W NosePokeBlank,W NosePokeBlank
+10,N HomeBox,Rear,G Survey,N HomeBox,S NosePokeGreen,R ExitAttempt,G Survey,W NosePokeBlank,C SmellFood,N HomeBox
+20,N HomeBox,G Survey,G Survey,R ExitAttempt,R ExitAttempt,G Survey,C Walk,N HomeBox,N HomeBox,N HomeBox
+30,W NosePokeBlank,Rear,G Survey,C SmellFood,G Survey,N HomeBox,C Walk,N HomeBox,N HomeBox,W NosePokeBlank
+40,N HomeBox,Rear,W NosePokeBlank,C Walk,C Walk,G Survey,W NosePokeBlank,W NosePokeBlank,Rear,C SmellFood
+50,N HomeBox,S NosePokeGreen,C Walk,N HomeBox,G Survey,G Survey,N HomeBox,R ExitAttempt,Rear,C Walk
+60,N HomeBox,C Walk,G Survey,N HomeBox,C Walk,N HomeBox,C Walk,W NosePokeBlank,C Walk,C Walk
+70,N HomeBox,G Survey,C Walk,W NosePokeBlank,G Survey,W NosePokeBlank,N HomeBox,N HomeBox,N HomeBox,Rear
+80,R ExitAttempt,C Walk,Rear,W NosePokeBlank,N HomeBox,C Walk,N HomeBox,W NosePokeBlank,S NosePokeGreen,N HomeBox
+90,N HomeBox,C Walk,N HomeBox,R ExitAttempt,W NosePokeBlank,S NosePokeGreen,N HomeBox,R ExitAttempt,W NosePokeBlank,S NosePokeGreen
+100,N HomeBox,S NosePokeGreen,N HomeBox,N HomeBox,N HomeBox,C Walk,C Walk,N HomeBox,N HomeBox,W NosePokeBlank
+110,N HomeBox,C Walk,N HomeBox,N HomeBox,S NosePokeGreen,C Walk,G Survey,N HomeBox,Rear,N HomeBox
+120,W NosePokeBlank,S NosePokeGreen,Rear,N HomeBox,R ExitAttempt,C SmellFood,W NosePokeBlank,S NosePokeGreen,N HomeBox,W NosePokeBlank
+130,S NosePokeGreen,Rear,C Walk,N HomeBox,S NosePokeGreen,G Survey,N HomeBox,R ExitAttempt,N HomeBox,G Survey
+140,S NosePokeGreen,Rear,G Survey,S NosePokeGreen,Rear,N HomeBox,N HomeBox,N HomeBox,W NosePokeBlank,N HomeBox
+150,S NosePokeGreen,G Survey,D Groom,N HomeBox,G Survey,R ExitAttempt,C Walk,W NosePokeBlank,G Survey,N HomeBox
+160,N HomeBox,Rear,N HomeBox,N HomeBox,C Walk,Rear,C SmellFood,W NosePokeBlank,S NosePokeGreen,N HomeBox
+170,N HomeBox,D Groom,S NosePokeGreen,R ExitAttempt,N HomeBox,W NosePokeBlank,S NosePokeGreen,C SmellFood,N HomeBox,C Walk
+180,N HomeBox,N HomeBox,G Survey,Rear,N HomeBox,C Walk,N HomeBox,G Survey,S NosePokeGreen,G Survey
+190,N HomeBox,G Survey,C Walk,N HomeBox,N HomeBox,Rear,W NosePokeBlank,S NosePokeGreen,Rear,Rear
+200,N HomeBox,C Walk,N PickUpFood,R ExitAttempt,N HomeBox,C Walk,C Walk,W NosePokeBlank,N HomeBox,C Walk
+210,N HomeBox,N HomeBox,C Walk,S NosePokeGreen,R ExitAttempt,C Walk,G Survey,N HomeBox,N HomeBox,C Walk
+220,N HomeBox,S Run,N HomeBox,S NosePokeGreen,C Walk,Rear,G Survey,R ExitAttempt,W NosePokeBlank,S NosePokeGreen
+230,S NosePokeGreen,G Survey,C Walk,N HomeBox,C SmellFood,N HomeBox,C Walk,N HomeBox,R ExitAttempt,W NosePokeBlank
+240,R ExitAttempt,C Walk,W NosePokeBlank,C SmellFood,S NosePokeGreen,N HomeBox,C Walk,C Walk,G Survey,S NosePokeGreen
+250,N HomeBox,Rear,W NosePokeBlank,Rear,C Walk,Rear,N HomeBox,G Survey,G Survey,C SmellFood
+260,N HomeBox,G Survey,W NosePokeBlank,W NosePokeBlank,S NosePokeGreen,G Survey,W NosePokeBlank,C Walk,C Walk,N HomeBox
+270,S NosePokeGreen,N HomeBox,Rear,N HomeBox,W NosePokeBlank,Rear,S NosePokeGreen,C Walk,C Walk,N HomeBox
+280,S NosePokeGreen,W NosePokeBlank,N HomeBox,W NosePokeBlank,W NosePokeBlank,C Walk,C Walk,Rear,G Survey,N HomeBox
+290,S NosePokeGreen,Rear,N HomeBox,Rear,N HomeBox,R ExitAttempt,Rear,G Survey,N HomeBox,N HomeBox
+300,N HomeBox,N HomeBox,N HomeBox,Rear,W NosePokeBlank,Rear,G Survey,C Walk,W NosePokeBlank,N HomeBox
+310,N HomeBox,N HomeBox,N HomeBox,Rear,C Walk,G Survey,G Survey,G Survey,Rear,C Walk
+320,R ExitAttempt,C Walk,N HomeBox,C Walk,C Walk,C Walk,R ExitAttempt,S NosePokeGreen,N HomeBox,W NosePokeBlank
+330,G Survey,C Walk,N HomeBox,N HomeBox,Rear,C Walk,C Walk,N HomeBox,N HomeBox,Rear
+340,C Walk,G Survey,N HomeBox,N HomeBox,N HomeBox,C Walk,G Survey,S NosePokeGreen,N HomeBox,Rear
+350,W NosePokeBlank,G Survey,Rear,N HomeBox,G Survey,Rear,N HomeBox,G Survey,W NosePokeBlank,C Walk
+360,C SmellFood,G Survey,C Walk,N HomeBox,Rear,Rear,S NosePokeGreen,C Walk,S NosePokeGreen,Rear
+370,C Walk,Rear,G Survey,G Survey,S NosePokeGreen,G Survey,R ExitAttempt,G Survey,G Survey,Rear
+380,Rear,Rear,Rear,Rear,C Walk,G Survey,C Walk,G Survey,C Walk,Rear
+390,S NosePokeGreen,N HomeBox,Rear,Rear,C Walk,S NosePokeGreen,G Survey,G Survey,R ExitAttempt,C Walk
+400,N HomeBox,N HomeBox,Rear,Rear,N HomeBox,C Walk,C Walk,G Survey,C Walk,C Walk
+410,S NosePokeGreen,C Walk,C Walk,W NosePokeBlank,C Walk,C Walk,G Survey,S NosePokeGreen,Rear,C Walk
+420,N HomeBox,C Walk,C Walk,W NosePokeBlank,C Walk,G Survey,G Survey,C SmellFood,G Survey,Rear
+430,N HomeBox,C Walk,Rear,W NosePokeBlank,N HomeBox,G Survey,C Walk,N HomeBox,C Walk,G Survey
+440,W NosePokeBlank,Rear,G Survey,C Walk,G Survey,N HomeBox,S NosePokeGreen,N HomeBox,W NosePokeBlank,W NosePokeBlank
+450,W NosePokeBlank,Rear,Rear,C Walk,W NosePokeBlank,G Survey,C Walk,W NosePokeBlank,N HomeBox,Rear
+460,N HomeBox,C Walk,W NosePokeBlank,Rear,R ExitAttempt,G Survey,C Walk,N HomeBox,N HomeBox,N HomeBox
+470,W NosePokeBlank,Rear,G Survey,Rear,C Walk,C Walk,C Walk,G Survey,Rear,Rear
+480,N HomeBox,C Walk,Rear,Rear,S NosePokeGreen,C Walk,N HomeBox,G Survey,C Walk,G Survey
+490,W NosePokeBlank,C Walk,Rear,Rear,W NosePokeBlank,N HomeBox,N HomeBox,C Walk,N HomeBox,G Survey
+500,N HomeBox,Rear,G Survey,Rear,G Survey,N HomeBox,N HomeBox,C Walk,G Survey,G Survey
+510,W NosePokeBlank,N HomeBox,W NosePokeBlank,G Survey,Rear,C Walk,S NosePokeGreen,G Survey,Rear,N HomeBox
+520,S NosePokeGreen,G Survey,W NosePokeBlank,N HomeBox,C Walk,Rear,S NosePokeGreen,C SmellFood,C Walk,N HomeBox
+530,C Walk,Rear,W NosePokeBlank,W NosePokeBlank,W NosePokeBlank,C Walk,W NosePokeBlank,Rear,W NosePokeBlank,W NosePokeBlank
+540,C SmellFood,Rear,S NosePokeGreen,W NosePokeBlank,N HomeBox,Rear,W NosePokeBlank,Rear,G Survey,N HomeBox
+550,Rear,Rear,N HomeBox,N HomeBox,S NosePokeGreen,C Walk,N HomeBox,C Walk,Rear,S NosePokeGreen
+560,N HomeBox,C Walk,N HomeBox,W NosePokeBlank,S NosePokeGreen,N HomeBox,W NosePokeBlank,Rear,W NosePokeBlank,N HomeBox
+570,Rear,C Walk,N HomeBox,C Walk,C Walk,G Survey,C Walk,Rear,G Survey,N HomeBox
+580,Rear,W NosePokeBlank,N HomeBox,Rear,N HomeBox,G Survey,G Survey,G Survey,C Walk,N HomeBox
+590,Rear,C Walk,S NosePokeGreen,C Walk,C Walk,G Survey,W NosePokeBlank,G Survey,C Walk,W NosePokeBlank
+600,Rear,G Survey,N PickUpFood,C Walk,G Survey,G Survey,C Walk,C Walk,N HomeBox,W NosePokeBlank

@@ -74,6 +74,7 @@ class RandomForest:
                     sns.heatmap(ax=ax, data=cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
                     ax.set_title(f'{group} {mode}',pad=20,fontsize=20)
                     ax.set_xlabel('Predicted',labelpad=20,fontsize=20)
+                    ax.set_ylabel('True',labelpad=20,fontsize=20)
 
         plt.show()
 
@@ -100,7 +101,7 @@ class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data'
+        self.path = 'data/calcium'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -149,7 +150,7 @@ class DataProcessor:
             reduced_dict = reducer.get_components(df_input)
             self.dict[group].update(reduced_dict)
             
-            for context in ['ctimes','rat_indices']:
+            for context in ['data','ctimes','rat_indices']:
                 del self.dict[group][context]
 
     @staticmethod
@@ -178,20 +179,21 @@ class Analysis:
     def calculate_correlation(self,input):
         correlation_df = pd.DataFrame(index=self.contexts,columns=self.contexts)
         vector_dict = {}
+        for id in range(1,6):
+            for unique_context in self.contexts:
+                raw_data = input['FS']['raw']
+                context_data = raw_data[raw_data['rat_id']==id][unique_context]
+                averaged_data = np.mean(context_data,axis=0)
+                vector_dict[unique_context] = averaged_data
 
-        for unique_context in self.contexts:
-            context_data = input['FS']['raw'][unique_context]
-            averaged_data = np.mean(context_data,axis=0)
-            vector_dict[unique_context] = averaged_data
+            combinations = list(itertools.combinations(vector_dict.keys(),2))
 
-        combinations = list(itertools.combinations(vector_dict.keys(),2))
+            for i in combinations:
+                group_1 = vector_dict[i[0]]
+                group_2 = vector_dict[i[1]]
+                correlation_df.at[i[0],i[1]] = pearsonr(group_1,group_2)
 
-        for i in combinations:
-            group_1 = vector_dict[i[0]]
-            group_2 = vector_dict[i[1]]
-            correlation_df.at[i[0],i[1]] = pearsonr(group_1,group_2)
-
-        print(correlation_df.head())
+            print(correlation_df)
 
     @staticmethod
     def seqnmf(input):
@@ -207,13 +209,13 @@ class Analysis:
 
 ## PROCESS AND ANALYZE DATA ##
 
-context_processor = DataProcessor('FS',reduce_list=['PCA'])
+context_processor = DataProcessor('FS','non-FS',reduce_list=[])
 prepared_data = context_processor.prepare_data()
 
 analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST','HC_POST+1','HC_POST+2','HC_POST+3'])
+
 #analyzer.visualize_data(prepared_data)
 #analyzer.predict_labels(prepared_data)
 analyzer.calculate_correlation(prepared_data)
 #analyzer.seqnmf(prepared_data)
-
 
