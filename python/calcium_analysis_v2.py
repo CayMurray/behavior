@@ -101,7 +101,7 @@ class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data/calcium'
+        self.path = 'data'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -179,21 +179,21 @@ class Analysis:
     def calculate_correlation(self,input):
         correlation_df = pd.DataFrame(index=self.contexts,columns=self.contexts)
         vector_dict = {}
+
         for id in range(1,6):
-            for unique_context in self.contexts:
-                raw_data = input['FS']['raw']
-                context_data = raw_data[raw_data['rat_id']==id][unique_context]
-                averaged_data = np.mean(context_data,axis=0)
-                vector_dict[unique_context] = averaged_data
+            raw_data = input['FS']['raw']
+            rat_data = raw_data[(raw_data['rat_id']==id)].drop(['rat_id','FS'],axis=1).T
+            average = rat_data.groupby(rat_data.index).mean()
+            correlation_matrix = average.corr()
+            corr_mask = np.triu(np.ones_like(correlation_matrix,dtype=bool))
 
-            combinations = list(itertools.combinations(vector_dict.keys(),2))
-
-            for i in combinations:
-                group_1 = vector_dict[i[0]]
-                group_2 = vector_dict[i[1]]
-                correlation_df.at[i[0],i[1]] = pearsonr(group_1,group_2)
-
-            print(correlation_df)
+            fig,ax = plt.subplots(figsize=(15,10))
+            cmap=sns.diverging_palette(220, 20, as_cmap=True)
+            sns.heatmap(ax=ax,data=correlation_matrix,mask=corr_mask,cmap=cmap)
+            ax.set_xlabel('Neuron ID',fontsize=15,labelpad=20)
+            ax.set_ylabel('Neuron ID',fontsize=15,labelpad=20)
+            plt.show()
+    
 
     @staticmethod
     def seqnmf(input):
@@ -204,18 +204,18 @@ class Analysis:
             array = filtered_data.drop(['rat_id'],axis=1).to_numpy()
             matlab_array = matlab.double(array.tolist())
             patterns = eng.seqNMF(matlab_array,'K', 5, 'L', 20, 'lambda', 0.00)
-            eng.eval(f"saveas(gcf,'seqNMF_result{id}.png')",nargout=0)
+            #eng.eval(f"saveas(gcf,'seqNMF_result{id}.png')",nargout=0)
 
 
 ## PROCESS AND ANALYZE DATA ##
 
-context_processor = DataProcessor('FS','non-FS',reduce_list=[])
+context_processor = DataProcessor('FS',reduce_list=[])
 prepared_data = context_processor.prepare_data()
 
 analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST','HC_POST+1','HC_POST+2','HC_POST+3'])
 
 #analyzer.visualize_data(prepared_data)
 #analyzer.predict_labels(prepared_data)
-analyzer.calculate_correlation(prepared_data)
-#analyzer.seqnmf(prepared_data)
+#analyzer.calculate_correlation(prepared_data)
+analyzer.seqnmf(prepared_data)
 
