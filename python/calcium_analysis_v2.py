@@ -251,3 +251,4 @@ analyzer = Analysis(contexts_to_analyze=['US_PRE','FS','US+1','US+2','US+3',
 analyzer.calculate_correlation(prepared_data)
 analyzer.seqnmf(prepared_data)
 
+
