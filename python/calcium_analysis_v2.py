@@ -104,7 +104,7 @@ class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data'
+        self.path = 'data/calcium'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -192,10 +192,12 @@ class Analysis:
 
             fig,ax = plt.subplots(figsize=(15,10))
             cmap=sns.diverging_palette(220, 20, as_cmap=True)
-            sns.heatmap(ax=ax,data=correlation_matrix,mask=corr_mask,cmap=cmap)
+            sns.heatmap(ax=ax,data=correlation_matrix,mask=corr_mask,cmap=cmap,vmin=-1,vmax=1)
             ax.set_xlabel('Neuron ID',fontsize=15,labelpad=20)
             ax.set_ylabel('Neuron ID',fontsize=15,labelpad=20)
-            plt.show()
+
+            plt.savefig(f'../cor_{id}.png')
+            #plt.show()
     
 
     @staticmethod
@@ -205,7 +207,7 @@ class Analysis:
         for id in set(df['rat_id']):
             filtered_data = df[df['rat_id']==id]
             array = filtered_data.drop(['rat_id'],axis=1).to_numpy()
-            W, H, cost, loadings, power = seqnmf(array,K=5, L=20,Lambda=0.001)
+            W, H, cost, loadings, power = seqnmf(array,K=3, L=20,Lambda=0.001)
             context_change_points = input['FS']['ctimes'][:-1]
             context_labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -213,7 +215,7 @@ class Analysis:
 
             fig, ax = plt.subplots(figsize=(20, 10))
             plt.subplots_adjust(top=0.85)
-            sns.heatmap(ax=ax, data=H, cmap='viridis')
+            sns.heatmap(ax=ax, data=H, cmap='viridis',vmin=0,vmax=0.2)
 
             tick_interval = 1000
             tick_positions = np.arange(0, H.shape[1], tick_interval)
@@ -221,8 +223,8 @@ class Analysis:
 
             ax.set_xticks(tick_positions)
             ax.set_xticklabels(tick_labels)
-
-            ax.set_ylim([0, H.shape[0] + 2]) 
+            ax.set_ylim([0, H.shape[0] + 2])
+            #ax.set_title(f'Rat {id}',pad=15) 
 
             start = 0
             for i, point in enumerate(context_change_points + [H.shape[1]]):
@@ -230,19 +232,22 @@ class Analysis:
                 midpoint = (start + point) / 2
                 ax.text(midpoint, H.shape[0] + 1, context_labels[i], horizontalalignment='center', verticalalignment='center', color='blue', fontsize=8)
                 start = point
+            
+            plt.savefig(f'../seq_{id}.png')
+            #plt.show()
 
-            plt.show()
-
-
+        
 ## PROCESS AND ANALYZE DATA ##
 
 context_processor = DataProcessor('FS',reduce_list=[])
 prepared_data = context_processor.prepare_data()
 
-analyzer = Analysis(contexts_to_analyze=['HC_PRE','HC_POST','HC_POST+1','HC_POST+2','HC_POST+3'])
+analyzer = Analysis(contexts_to_analyze=['US_PRE','FS','US+1','US+2','US+3',
+        'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
+        'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3'])
 
 #analyzer.visualize_data(prepared_data)
 #analyzer.predict_labels(prepared_data)
-#analyzer.calculate_correlation(prepared_data)
+analyzer.calculate_correlation(prepared_data)
 analyzer.seqnmf(prepared_data)
 
