@@ -15,9 +15,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 from scipy.stats import pearsonr
-from seqnmf import seqnmf
-
-np.random.seed(42)
 
 
 eng = engine.start_matlab()
@@ -153,7 +150,7 @@ class DataProcessor:
             reduced_dict = reducer.get_components(df_input)
             self.dict[group].update(reduced_dict)
             
-            for context in ['data','rat_indices']:
+            for context in ['data','ctimes','rat_indices']:
                 del self.dict[group][context]
 
     @staticmethod
@@ -205,33 +202,9 @@ class Analysis:
         for id in set(df['rat_id']):
             filtered_data = df[df['rat_id']==id]
             array = filtered_data.drop(['rat_id'],axis=1).to_numpy()
-            W, H, cost, loadings, power = seqnmf(array,K=5, L=20,Lambda=0.001)
-            context_change_points = input['FS']['ctimes'][:-1]
-            context_labels = ['US_PRE','FS','US+1','US+2','US+3',
-        'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
-        'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3']
-
-            fig, ax = plt.subplots(figsize=(20, 10))
-            plt.subplots_adjust(top=0.85)
-            sns.heatmap(ax=ax, data=H, cmap='viridis')
-
-            tick_interval = 1000
-            tick_positions = np.arange(0, H.shape[1], tick_interval)
-            tick_labels = [str(i) for i in tick_positions]
-
-            ax.set_xticks(tick_positions)
-            ax.set_xticklabels(tick_labels)
-
-            ax.set_ylim([0, H.shape[0] + 2]) 
-
-            start = 0
-            for i, point in enumerate(context_change_points + [H.shape[1]]):
-                ax.axvline(x=point, color='red', linestyle='--') if i < len(context_change_points) else None
-                midpoint = (start + point) / 2
-                ax.text(midpoint, H.shape[0] + 1, context_labels[i], horizontalalignment='center', verticalalignment='center', color='blue', fontsize=8)
-                start = point
-
-            plt.show()
+            matlab_array = matlab.double(array.tolist())
+            patterns = eng.seqNMF(matlab_array,'K', 5, 'L', 20, 'lambda', 0.00)
+            #eng.eval(f"saveas(gcf,'seqNMF_result{id}.png')",nargout=0)
 
 
 ## PROCESS AND ANALYZE DATA ##
