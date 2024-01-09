@@ -63,21 +63,22 @@ class RandomForest:
     def train_rf(self):
         for (group,modes) in self.dict.items():
                 for mode,data in modes.items():
-                    data = data[data['context_ids'].isin(self.contexts)]
-                    X = data.drop(['context_ids'],axis=1)
-                    Y = data['context_ids']
-                    X_train,x_test,Y_train,y_test = train_test_split(X,Y,test_size=0.3,random_state=self.random_state,shuffle=True)
-                    rf = RandomForestClassifier(n_estimators=self.num_trees,random_state=self.random_state)
-                    rf.fit(X_train,Y_train)
-                    predicted = rf.predict(x_test)
-                    cm = confusion_matrix(y_test,predicted)
-                    unique_labels = sorted(set(Y))
+                    if mode == 'raw':
+                        data = data[data['context_ids'].isin(self.contexts)]
+                        X = data.drop(['context_ids'],axis=1)
+                        Y = data['context_ids']
+                        X_train,x_test,Y_train,y_test = train_test_split(X,Y,test_size=0.3,random_state=self.random_state,shuffle=True)
+                        rf = RandomForestClassifier(n_estimators=self.num_trees,random_state=self.random_state)
+                        rf.fit(X_train,Y_train)
+                        predicted = rf.predict(x_test)
+                        cm = confusion_matrix(y_test,predicted)
+                        unique_labels = sorted(set(Y))
 
-                    fig,ax = plt.subplots(figsize=(20,10))
-                    sns.heatmap(ax=ax, data=cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
-                    ax.set_title(f'{group} {mode}',pad=20,fontsize=20)
-                    ax.set_xlabel('Predicted',labelpad=20,fontsize=20)
-                    ax.set_ylabel('True',labelpad=20,fontsize=20)
+                        fig,ax = plt.subplots(figsize=(20,10))
+                        sns.heatmap(ax=ax, data=cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
+                        ax.set_title(f'{group} {mode}',pad=20,fontsize=20)
+                        ax.set_xlabel('Predicted',labelpad=20,fontsize=20)
+                        ax.set_ylabel('True',labelpad=20,fontsize=20)
 
         plt.show()
 
@@ -104,7 +105,7 @@ class DataProcessor:
 
     def __init__(self,*args,reduce_list=['PCA']):
         self.datasets = args
-        self.path = 'data/calcium'
+        self.path = 'data'
         self.dict = {}
         self.labels = ['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
@@ -203,38 +204,37 @@ class Analysis:
     @staticmethod
     def seqnmf(input):
         df = input['FS']['raw']
+        array = df.drop(['rat_id'],axis=1).to_numpy()
+        W, H, cost, loadings, power = seqnmf(array,K=3, L=20,Lambda=0.001)
+        context_change_points = input['FS']['ctimes'][:-1]
+        context_labels = ['US_PRE','FS','US+1','US+2','US+3',
+    'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
+    'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3']
 
-        for id in set(df['rat_id']):
-            filtered_data = df[df['rat_id']==id]
-            array = filtered_data.drop(['rat_id'],axis=1).to_numpy()
-            W, H, cost, loadings, power = seqnmf(array,K=3, L=20,Lambda=0.001)
-            context_change_points = input['FS']['ctimes'][:-1]
-            context_labels = ['US_PRE','FS','US+1','US+2','US+3',
-        'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
-        'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3']
+        fig, ax = plt.subplots(figsize=(20, 10))
+        plt.subplots_adjust(top=0.85)
+        vmin = np.mean(H) - np.std(H)
+        vmax = np.mean(H) + np.std(H)
+        sns.heatmap(ax=ax, data=H, cmap='viridis',vmin=vmin,vmax=vmax)
 
-            fig, ax = plt.subplots(figsize=(20, 10))
-            plt.subplots_adjust(top=0.85)
-            sns.heatmap(ax=ax, data=H, cmap='viridis',vmin=0,vmax=0.2)
+        tick_interval = 1000
+        tick_positions = np.arange(0, H.shape[1], tick_interval)
+        tick_labels = [str(i) for i in tick_positions]
 
-            tick_interval = 1000
-            tick_positions = np.arange(0, H.shape[1], tick_interval)
-            tick_labels = [str(i) for i in tick_positions]
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels)
+        ax.set_ylim([0, H.shape[0] + 2])
+        #ax.set_title(f'Rat {id}',pad=15) 
 
-            ax.set_xticks(tick_positions)
-            ax.set_xticklabels(tick_labels)
-            ax.set_ylim([0, H.shape[0] + 2])
-            #ax.set_title(f'Rat {id}',pad=15) 
-
-            start = 0
-            for i, point in enumerate(context_change_points + [H.shape[1]]):
-                ax.axvline(x=point, color='red', linestyle='--') if i < len(context_change_points) else None
-                midpoint = (start + point) / 2
-                ax.text(midpoint, H.shape[0] + 1, context_labels[i], horizontalalignment='center', verticalalignment='center', color='blue', fontsize=8)
-                start = point
-            
-            plt.savefig(f'../seq_{id}.png')
-            #plt.show()
+        start = 0
+        for i, point in enumerate(context_change_points + [H.shape[1]]):
+            ax.axvline(x=point, color='red', linestyle='--') if i < len(context_change_points) else None
+            midpoint = (start + point) / 2
+            ax.text(midpoint, H.shape[0] + 1, context_labels[i], horizontalalignment='center', verticalalignment='center', color='blue', fontsize=8)
+            start = point
+        
+        #plt.savefig(f'../seq_{id}.png')
+        plt.show()
 
         
 ## PROCESS AND ANALYZE DATA ##
@@ -242,13 +242,56 @@ class Analysis:
 context_processor = DataProcessor('FS',reduce_list=[])
 prepared_data = context_processor.prepare_data()
 
+
 analyzer = Analysis(contexts_to_analyze=['US_PRE','FS','US+1','US+2','US+3',
         'HC_PRE','HC_POST','HC_PRE+1','HC_POST+1',
         'HC_PRE+2','HC_POST+2','HC_PRE+3','HC_POST+3'])
 
 #analyzer.visualize_data(prepared_data)
 #analyzer.predict_labels(prepared_data)
-analyzer.calculate_correlation(prepared_data)
+#analyzer.calculate_correlation(prepared_data)
 analyzer.seqnmf(prepared_data)
 
+'''
+
+current_group = 'FS'
+
+raw_data = prepared_data[current_group]['raw'].drop(['rat_id'],axis=1)
+col = raw_data.columns
+inter_data = raw_data.T.to_numpy()
+final_data = pd.DataFrame(inter_data)
+final_data['context_ids'] = col
+
+block_size = 10
+n_blocks = len(final_data) // block_size
+blocks = [final_data.iloc[i*block_size:(1+i)*block_size] for i in range(n_blocks)]
+np.random.seed(42)
+np.random.shuffle(blocks)
+data = pd.concat(blocks,axis=0).reset_index(drop=True)
+
+split_point = (n_blocks // 2) * block_size
+X = data.drop(['context_ids'],axis=1)
+y = data['context_ids']
+
+X_train = X.iloc[:split_point]
+y_train = y.iloc[:split_point]
+
+X_test = X.iloc[split_point:]
+y_test = y.iloc[split_point:]
+
+rf = RandomForestClassifier(n_estimators=100,random_state=42)
+rf.fit(X_train,y_train)
+predicted = rf.predict(X_test)
+cm = confusion_matrix(y_test,predicted)
+unique_labels = sorted(set(y))
+
+fig,ax = plt.subplots(figsize=(20,10))
+sns.heatmap(ax=ax, data=cm, fmt='g',annot=True, cmap='Blues', xticklabels=unique_labels, yticklabels=unique_labels)
+ax.set_title(f'FS raw',pad=20,fontsize=20)
+ax.set_xlabel('Predicted',labelpad=20,fontsize=20)
+ax.set_ylabel('True',labelpad=20,fontsize=20)
+
+plt.show()
+
+'''
 
